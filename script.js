@@ -4,7 +4,7 @@
    glow interactions, WHO IS BERLIN slow-motion text reveal,
    and full multi-language switching (see translations.js).
    ========================================================= */
-
+const API_URL = "https://berlin-website.onrender.com";
 document.addEventListener('DOMContentLoaded', () => {
 
   const zoomLayer   = document.getElementById('zoomLayer');

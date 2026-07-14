@@ -478,54 +478,147 @@ document.addEventListener('DOMContentLoaded', () => {
      file has to change.
      ========================================================= */
   const API = {
-    async saveDelivery(entry){
+  async saveDelivery(entry) {
+    try {
+      const res = await fetch(`${API_URL}/api/deliveries`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(entry)
+      });
+      if (!res.ok) throw new Error("فشل إرسال التوصيل");
+      return await res.json();
+    } catch (err) {
+      console.error(err);
       const list = JSON.parse(localStorage.getItem('berlin_deliveries') || '[]');
       list.push(entry);
       localStorage.setItem('berlin_deliveries', JSON.stringify(list));
-      // return fetch('/api/deliveries', {method:'POST', body: JSON.stringify(entry)});
-    },
-    async saveInboxMessage(entry){
+      return entry;
+    }
+  },
+
+  async saveInboxMessage(entry) {
+    try {
+      const res = await fetch(`${API_URL}/api/inbox`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(entry)
+      });
+      if (!res.ok) throw new Error("فشل إرسال الرسالة");
+      return await res.json();
+    } catch (err) {
+      console.error(err);
       const list = JSON.parse(localStorage.getItem('berlin_inbox') || '[]');
       list.push(entry);
       localStorage.setItem('berlin_inbox', JSON.stringify(list));
-      // return fetch('/api/inbox', {method:'POST', body: JSON.stringify(entry)});
-    },
-    async getDeliveries(){
+      return entry;
+    }
+  },
+
+  async getDeliveries() {
+    try {
+      const res = await fetch(`${API_URL}/api/deliveries`);
+      if (!res.ok) throw new Error("فشل جلب التوصيلات");
+      return await res.json();
+    } catch (err) {
+      console.error(err);
       return JSON.parse(localStorage.getItem('berlin_deliveries') || '[]');
-      // return (await fetch('/api/deliveries')).json();
-    },
-    async getInboxMessages(){
+    }
+  },
+
+  async getInboxMessages() {
+    try {
+      const res = await fetch(`${API_URL}/api/inbox`);
+      if (!res.ok) throw new Error("فشل جلب الرسائل");
+      return await res.json();
+    } catch (err) {
+      console.error(err);
       return JSON.parse(localStorage.getItem('berlin_inbox') || '[]');
-      // return (await fetch('/api/inbox')).json();
-    },
-    async getConfessions(){
+    }
+  },
+
+  async getConfessions() {
+    try {
+      const res = await fetch(`${API_URL}/api/confessions`);
+      if (!res.ok) throw new Error("فشل جلب الاعترافات");
+      return await res.json();
+    } catch (err) {
+      console.error(err);
       const list = JSON.parse(localStorage.getItem('berlin_confessions') || '[]');
-      // safety net: any confession saved before ids existed gets one now,
-      // so it can still be selected and deleted from the admin panel
       let changed = false;
       list.forEach(entry => { if (!entry.id) { entry.id = genId(); changed = true; } });
       if (changed) localStorage.setItem('berlin_confessions', JSON.stringify(list));
       return list;
-      // return (await fetch('/api/confessions')).json();
-    },
-    async addConfession(entry){
+    }
+  },
+
+  async addConfession(entry) {
+    try {
+      const res = await fetch(`${API_URL}/api/confessions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(entry)
+      });
+      if (!res.ok) throw new Error("فشل إرسال الاعتراف");
+      return await res.json();
+    } catch (err) {
+      console.error(err);
       const list = JSON.parse(localStorage.getItem('berlin_confessions') || '[]');
       list.push(entry);
       localStorage.setItem('berlin_confessions', JSON.stringify(list));
-      // return fetch('/api/confessions', {method:'POST', body: JSON.stringify(entry)});
-    },
-    async deleteConfessions(ids){
+      return entry;
+    }
+  },
+
+  async deleteConfessions(ids) {
+    try {
+      const res = await fetch(`${API_URL}/api/confessions/delete`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids })
+      });
+      if (!res.ok) throw new Error("فشل حذف الاعترافات");
+      return await res.json();
+    } catch (err) {
+      console.error(err);
       let list = JSON.parse(localStorage.getItem('berlin_confessions') || '[]');
       list = list.filter(c => !ids.includes(c.id));
       localStorage.setItem('berlin_confessions', JSON.stringify(list));
-      // return fetch('/api/confessions/delete', {method:'POST', body: JSON.stringify({ids})});
       return list;
-    },
-    async isChatNameTaken(name){
+    }
+  },
+
+  async isChatNameTaken(name) {
+    try {
+      const res = await fetch(`${API_URL}/api/chat/name-check?name=` + encodeURIComponent(name));
+      if (!res.ok) throw new Error("فشل فحص الاسم");
+      return await res.json(); // يتوقع السيرفر إرجاع true أو false
+    } catch (err) {
+      console.error(err);
       const names = JSON.parse(localStorage.getItem('berlin_chat_names') || '[]');
       return names.includes(name.toLowerCase());
-      // return (await fetch('/api/chat/name-check?name=' + encodeURIComponent(name))).json();
-    },
+    }
+  },
+
+  async registerChatName(name) {
+    try {
+      const res = await fetch(`${API_URL}/api/chat/register-name`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
+      });
+      if (!res.ok) throw new Error("فشل حجز الاسم");
+      return await res.json();
+    } catch (err) {
+      console.error(err);
+      const names = JSON.parse(localStorage.getItem('berlin_chat_names') || '[]');
+      if (!names.includes(name.toLowerCase())) {
+        names.push(name.toLowerCase());
+        localStorage.setItem('berlin_chat_names', JSON.stringify(names));
+      }
+      return true;
+    }
+  }
+};
     async registerChatName(name){
       const names = JSON.parse(localStorage.getItem('berlin_chat_names') || '[]');
       names.push(name.toLowerCase());
